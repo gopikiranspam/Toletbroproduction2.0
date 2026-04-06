@@ -14,17 +14,7 @@ import {
 } from 'firebase/auth';
 import { auth, db } from '../firebase';
 import { doc, getDoc, setDoc, updateDoc, collection, query, where, getDocs, onSnapshot } from 'firebase/firestore';
-import firebaseConfigJson from '../../firebase-applet-config.json';
 import { User, UserRole } from '../types';
-
-// Use environment variables if available, otherwise fallback to config file
-const firebaseConfig = {
-  apiKey: (process.env as any).VITE_FIREBASE_API_KEY || firebaseConfigJson.apiKey,
-  authDomain: (process.env as any).VITE_FIREBASE_AUTH_DOMAIN || firebaseConfigJson.authDomain,
-  projectId: (process.env as any).VITE_FIREBASE_PROJECT_ID || firebaseConfigJson.projectId,
-  appId: (process.env as any).VITE_FIREBASE_APP_ID || firebaseConfigJson.appId
-};
-
 import { safeLog } from '../utils/logger';
 import { api } from '../services/api';
 
@@ -62,27 +52,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const isRecaptchaInitialized = useRef(false);
 
   useEffect(() => {
-    // Diagnostics check on mount
-    const checkConfig = () => {
-      safeLog.log('DEEP DIVE: Firebase Config Check:', {
-        projectId: firebaseConfig.projectId,
-        authDomain: firebaseConfig.authDomain,
-        apiKey: firebaseConfig.apiKey ? 'Present (starts with ' + firebaseConfig.apiKey.substring(0, 5) + '...)' : 'MISSING',
-        appId: firebaseConfig.appId ? 'Present' : 'MISSING'
-      });
-      
-      if (!firebaseConfig.apiKey) {
-        safeLog.error('CRITICAL: API Key is missing from firebase-applet-config.json');
-      }
-      
-      if (firebaseConfig.authDomain && !firebaseConfig.authDomain.includes('firebaseapp.com')) {
-        safeLog.warn('Warning: authDomain looks unusual:', firebaseConfig.authDomain);
-      }
-      
-      safeLog.log('Current Hostname:', window.location.hostname);
-    };
-    checkConfig();
-
     const unsubscribe = onAuthStateChanged(auth, (fUser) => {
       setFirebaseUser(fUser);
       let userUnsubscribe: (() => void) | null = null;

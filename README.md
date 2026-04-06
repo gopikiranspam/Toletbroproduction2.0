@@ -1,20 +1,78 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# ToLetBro - Real Estate & Property Management
 
-# Run and deploy your AI Studio app
+A modern, full-stack real-estate application built with React, Vite, Tailwind CSS, and Firebase.
 
-This contains everything you need to run your app locally.
+## Features
 
-View your app in AI Studio: https://ai.studio/apps/a2ef6c5e-f9e4-4809-8e45-1303096e344b
+- **Property Listings**: Search and filter properties in Hyderabad.
+- **Owner Profiles**: View owner details and their other listings.
+- **Privacy Controls**: "Do Not Disturb" and "Only Message" modes for owners.
+- **QR Integration**: Generate and scan QR codes for property listings.
+- **Responsive Design**: Optimized for both desktop and mobile.
+- **SEO Ready**: Dynamic meta tags and sitemap generation.
 
-## Run Locally
+## Tech Stack
 
-**Prerequisites:**  Node.js
+- **Frontend**: React 19, Vite, Tailwind CSS 4, Motion (Framer Motion)
+- **Backend**: Express (for sitemap and health checks)
+- **Database**: Firebase Firestore
+- **Auth**: Firebase Authentication (Google Login & Phone OTP)
+- **Storage**: Firebase Storage (Property images & Profile pictures)
+- **Icons**: Lucide React
 
+## Getting Started
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+### Prerequisites
+
+- Node.js 18+
+- Firebase Project
+
+### Installation
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/your-username/toletbro.git
+   cd toletbro
+   ```
+
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+3. Set up environment variables:
+   Copy `.env.example` to `.env` and fill in your Firebase and Google Maps credentials.
+
+4. Start the development server:
+   ```bash
+   npm run dev
+   ```
+
+## Deployment
+
+### Netlify (Recommended for Frontend)
+
+This project is optimized for Netlify deployment.
+
+1. **Connect to GitHub**: Push your code to a GitHub repository.
+2. **Create a New Site**: In Netlify, select "Import from git" and choose your repository.
+3. **Build Settings**:
+   - **Build Command**: `npm run build`
+   - **Publish Directory**: `dist`
+4. **Environment Variables**: Add the variables from `.env.example` to the Netlify site settings (Site settings > Build & deploy > Environment).
+5. **Redirects**: The `netlify.toml` file handles SPA routing automatically.
+
+### GitHub Actions (Optional)
+
+You can set up a GitHub Action to automatically deploy to Netlify or other platforms on every push to the `main` branch.
+
+## Firebase Security Rules
+
+Make sure to deploy the security rules for Firestore and Storage:
+
+- **Firestore**: Use the contents of `firestore.rules`.
+- **Storage**: Use the contents of `storage.rules`.
+
+## License
+
+MIT License
