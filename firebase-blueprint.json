@@ -1,0 +1,149 @@
+{
+  "entities": {
+    "QRCode": {
+      "title": "QRCode",
+      "description": "Represents a physical or digital QR code sticker.",
+      "type": "object",
+      "properties": {
+        "qrId": {
+          "type": "string",
+          "description": "Unique identifier for the QR code (e.g., QR-84729A)."
+        },
+        "status": {
+          "type": "string",
+          "enum": ["UNLINKED", "LINKED"],
+          "description": "The current state of the QR code."
+        },
+        "ownerId": {
+          "type": "string",
+          "description": "The ID of the owner this QR is linked to (null if UNLINKED)."
+        },
+        "createdBy": {
+          "type": "string",
+          "enum": ["ADMIN", "OWNER"],
+          "description": "Who generated the QR code."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the QR code was created."
+        },
+        "publicUrl": {
+          "type": "string",
+          "description": "The public URL for the QR code."
+        }
+      },
+      "required": ["qrId", "status", "createdBy", "createdAt"]
+    },
+    "Property": {
+      "title": "Property",
+      "description": "A real estate property listing.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "ownerId": { "type": "string" },
+        "ownerName": { "type": "string" },
+        "ownerPhone": { "type": "string" },
+        "title": { "type": "string" },
+        "slug": { "type": "string" },
+        "description": { "type": "string" },
+        "price": { "type": "number" },
+        "location": { "type": "string" },
+        "beds": { "type": "number" },
+        "baths": { "type": "number" },
+        "sqft": { "type": "number" },
+        "type": { "type": "string", "enum": ["Independent House", "Apartment", "Standalone Building", "Hostel", "Commercial"] },
+        "category": { "type": "string", "enum": ["Rent", "Sale"] },
+        "imageUrl": { "type": "string" },
+        "images": { "type": "array", "items": { "type": "string" } },
+        "features": { "type": "array", "items": { "type": "string" } },
+        "isActive": { "type": "boolean" },
+        "isFeatured": { "type": "boolean" },
+        "bhkType": { "type": "string", "enum": ["1 RK", "1 BHK", "2 BHK", "3 BHK", "4+ BHK"] },
+        "furnishing": { "type": "string", "enum": ["Unfurnished", "Semi-Furnished", "Fully Furnished"] },
+        "locality": { "type": "string" },
+        "fullAddress": { "type": "string" },
+        "state": { "type": "string" },
+        "city": { "type": "string" },
+        "pincode": { "type": "string" },
+        "deposit": { "type": "number" },
+        "maintenance": { "type": "number" },
+        "priceNegotiable": { "type": "boolean" },
+        "loanAvailable": { "type": "boolean" },
+        "floorNumber": { "type": "number" },
+        "totalFloors": { "type": "number" },
+        "bathrooms": { "type": "number" },
+        "preferredTenant": { "type": "string", "enum": ["Family only", "Bachelor", "Office Only", "Anyone"] },
+        "availableFrom": { "type": "string" },
+        "amenities": { "type": "array", "items": { "type": "string" } },
+        "nearbyFacilities": { "type": "array", "items": { "type": "string" } },
+        "userType": { "type": "string", "enum": ["Owner", "Agent"] },
+        "lat": { "type": "number" },
+        "lng": { "type": "number" },
+        "isOccupied": { "type": "boolean" },
+        "isDeleted": { "type": "boolean" },
+        "scans": { "type": "number" },
+        "internalScans": { "type": "number" },
+        "views": { "type": "number" },
+        "favoritesCount": { "type": "number" },
+        "shares": { "type": "number" },
+        "callClicks": { "type": "number" },
+        "messageClicks": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "ownerId", "isActive", "category", "bhkType", "type", "furnishing", "locality", "city", "state", "pincode", "price", "sqft", "floorNumber", "totalFloors", "bathrooms", "preferredTenant", "availableFrom", "userType", "createdAt"]
+    },
+    "User": {
+      "title": "User",
+      "description": "Application user (Admin, Owner, or Finder).",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "email": { "type": "string" },
+        "phone": { "type": "string" },
+        "role": { "type": "string", "enum": ["ADMIN", "OWNER", "FINDER"] },
+        "qrId": { "type": "string" },
+        "favorites": { "type": "array", "items": { "type": "string" } },
+        "privacy": { "type": "object" }
+      },
+      "required": ["id", "role"]
+    },
+    "UserPublic": {
+      "title": "UserPublic",
+      "description": "Publicly accessible user information.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "phone": { "type": "string" },
+        "email": { "type": "string" },
+        "role": { "type": "string" },
+        "privacy": { "type": "object" }
+      },
+      "required": ["id"]
+    }
+  },
+  "firestore": {
+    "/qrcodes/{qrId}": {
+      "schema": "QRCode",
+      "description": "Collection of all QR codes."
+    },
+    "/properties/{propertyId}": {
+      "schema": "Property",
+      "description": "Collection of all property listings."
+    },
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "Collection of user profiles."
+    },
+    "/users_public/{userId}": {
+      "schema": "UserPublic",
+      "description": "Publicly accessible user profiles."
+    },
+    "/test/{docId}": {
+      "schema": "object",
+      "description": "Used for connection testing."
+    }
+  }
+}

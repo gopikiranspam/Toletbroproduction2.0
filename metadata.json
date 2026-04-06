@@ -1,0 +1,8 @@
+{
+  "name": "TOLETBRO_REMIX VER 2.0",
+  "description": "Find houses for rent near you without broker. We invented smart tolet boards, Just Scan QR to view all nearby To-Let properties instantly.",
+  "requestFramePermissions": [
+    "camera",
+    "geolocation"
+  ]
+}

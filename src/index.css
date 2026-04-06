@@ -1,0 +1,199 @@
+@import "tailwindcss";
+
+.recaptcha-container {
+  display: block;
+  height: 1px;
+  width: 1px;
+  opacity: 0.01;
+  pointer-events: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: -1;
+}
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --color-brand: #10b981; /* Emerald-500 */
+}
+
+:root {
+  --bg: #ffffff;
+  --card-bg: #f5f7f9; /* Slightly darker for better contrast against white background */
+  --border: rgba(0, 0, 0, 0.12); /* More visible border in light mode */
+  --text-primary: #0a0a0a; /* Slightly darker black */
+  --text-secondary: rgba(0, 0, 0, 0.7); /* Darker secondary text for better readability */
+  --navbar-bg: rgba(255, 255, 255, 0.85); /* More opaque navbar for better separation */
+}
+
+.dark {
+  --bg: #050505;
+  --card-bg: #111111;
+  --border: rgba(255, 255, 255, 0.1);
+  --text-primary: #ffffff;
+  --text-secondary: rgba(255, 255, 255, 0.6);
+  --navbar-bg: rgba(0, 0, 0, 0.5);
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #333;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #444;
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+.no-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+/* Siri-inspired Premium Inner Glow */
+@keyframes siri-glow {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.siri-inner-glow {
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.siri-inner-glow::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  padding: 1.5px; /* The "line" thickness */
+  background: linear-gradient(
+    -45deg,
+    #3b82f6, /* blue */
+    #8b5cf6, /* purple */
+    #ec4899, /* pink */
+    #22d3ee  /* cyan */
+  );
+  background-size: 200% 200%;
+  -webkit-mask: 
+     linear-gradient(#fff 0 0) content-box, 
+     linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+          mask-composite: exclude;
+  animation: siri-glow 6s linear infinite;
+  opacity: 0.6;
+  filter: blur(0.5px);
+}
+
+.siri-inner-glow::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  padding: 3px; /* Diffusion thickness */
+  background: linear-gradient(
+    -45deg,
+    #3b82f6,
+    #8b5cf6,
+    #ec4899,
+    #22d3ee
+  );
+  background-size: 200% 200%;
+  -webkit-mask: 
+     linear-gradient(#fff 0 0) content-box, 
+     linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+          mask-composite: exclude;
+  animation: siri-glow 6s linear infinite;
+  filter: blur(3px);
+  opacity: 0.3;
+}
+
+.dark .siri-inner-glow::before {
+  opacity: 0.9;
+}
+
+.dark .siri-inner-glow::after {
+  opacity: 0.5;
+  filter: blur(4px);
+}
+
+@media print {
+  @page {
+    size: A4 landscape;
+    margin: 0;
+  }
+  
+  body {
+    margin: 0;
+    padding: 0;
+  }
+
+  body * {
+    visibility: hidden;
+  }
+  
+  .print-board-container, .print-board-container * {
+    visibility: visible;
+  }
+  
+  .print-board-container {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 297mm;
+    height: 210mm;
+    margin: 0;
+    padding: 0;
+    background: white !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    color: black !important;
+    z-index: 9999;
+  }
+
+  /* Ensure borders and text are black for printing */
+  .print-board-container div {
+    border-color: black !important;
+  }
+}

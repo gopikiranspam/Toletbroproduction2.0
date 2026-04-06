@@ -1,0 +1,195 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: qrcodes
+    // Document ID: qrId
+    // Fields:
+    //   - qrId: string (required)
+    //   - status: string (required, enum: ["UNLINKED", "LINKED"])
+    //   - ownerId: string (optional/null if UNLINKED)
+    //   - createdBy: string (required, enum: ["ADMIN", "OWNER"])
+    //   - createdAt: string (required, ISO 8601)
+    //   - publicUrl: string (optional)
+    //
+    // Collection: properties
+    // Document ID: propertyId
+    // Fields:
+    //   - id: string (required)
+    //   - ownerId: string (required)
+    //   - isActive: bool (required)
+    //   - category: string (required, enum: ["Rent", "Sale"])
+    //   - bhkType: string (required, enum: ["1 RK", "1 BHK", "2 BHK", "3 BHK", "4+ BHK"])
+    //   - type: string (required, enum: ["Independent House", "Apartment", "Standalone Building", "Hostel", "Commercial"])
+    //   - furnishing: string (required, enum: ["Unfurnished", "Semi-Furnished", "Fully Furnished"])
+    //   - locality: string (required)
+    //   - city: string (required)
+    //   - state: string (required)
+    //   - pincode: string (required)
+    //   - price: number (required)
+    //   - sqft: number (required)
+    //   - floorNumber: number (required)
+    //   - totalFloors: number (required)
+    //   - bathrooms: number (required)
+    //   - preferredTenant: string (required, enum: ["Family only", "Bachelor", "Office Only", "Anyone"])
+    //   - availableFrom: string (required)
+    //   - userType: string (required, enum: ["Owner", "Agent"])
+    //   - createdAt: string (required, ISO 8601)
+    //   [Other optional fields: description, title, images, amenities, etc.]
+    //
+    // Collection: users
+    // Document ID: userId
+    // Fields:
+    //   - id: string (required)
+    //   - role: string (required, enum: ["ADMIN", "OWNER", "FINDER"])
+    //   - name: string
+    //   - email: string
+    //   - phone: string
+    //   - favorites: list
+    //   - privacy: map
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() && (
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'ADMIN') ||
+        (request.auth.token.email == "gopikiranspam@gmail.com" && request.auth.token.email_verified == true)
+      );
+    }
+
+    function isValidEmail(email) {
+      return email is string && email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
+    }
+
+    function isValidDateString(dateStr) {
+      return dateStr is string && dateStr.matches("^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}.*Z?$");
+    }
+
+    function hasOnlyAllowedFields(fields) {
+      return request.resource.data.keys().hasOnly(fields);
+    }
+
+    function hasRequiredFields(fields) {
+      return request.resource.data.keys().hasAll(fields);
+    }
+
+    // Domain Validators
+    
+    function isValidQRCode(data) {
+      return hasRequiredFields(['qrId', 'status', 'createdBy', 'createdAt']) &&
+             data.qrId is string && data.qrId.size() > 0 && data.qrId.size() < 100 &&
+             data.status in ["UNLINKED", "LINKED"] &&
+             data.createdBy in ["ADMIN", "OWNER"] &&
+             (data.ownerId == null || (data.ownerId is string && data.ownerId.size() > 0 && data.ownerId.size() < 100)) &&
+             isValidDateString(data.createdAt);
+    }
+
+    function isValidProperty(data) {
+      let requiredFields = ['id', 'ownerId', 'ownerName', 'ownerPhone', 'isActive', 'category', 'bhkType', 'type', 'furnishing', 'locality', 'city', 'state', 'pincode', 'price', 'sqft', 'floorNumber', 'totalFloors', 'bathrooms', 'preferredTenant', 'availableFrom', 'userType', 'createdAt'];
+      return hasRequiredFields(requiredFields) &&
+             data.id is string && data.id.size() > 0 && data.id.size() < 100 &&
+             data.ownerId is string && data.ownerId.size() > 0 && data.ownerId.size() < 100 &&
+             data.ownerName is string && data.ownerName.size() > 0 && data.ownerName.size() < 100 &&
+             data.ownerPhone is string && data.ownerPhone.size() > 0 && data.ownerPhone.size() < 20 &&
+             data.isActive is bool &&
+             data.category in ['Rent', 'Sale'] &&
+             data.bhkType in ['1 RK', '1 BHK', '2 BHK', '3 BHK', '4+ BHK'] &&
+             data.type in ['Independent House', 'Apartment', 'Standalone Building', 'Hostel', 'Commercial'] &&
+             data.furnishing in ['Unfurnished', 'Semi-Furnished', 'Fully Furnished'] &&
+             data.preferredTenant in ['Family only', 'Bachelor', 'Office Only', 'Anyone'] &&
+             data.userType in ['Owner', 'Agent'] &&
+             data.price is number && data.price >= 0 &&
+             data.sqft is number && data.sqft > 0 &&
+             data.floorNumber is number &&
+             data.totalFloors is number &&
+             data.bathrooms is number &&
+             data.locality is string && data.locality.size() > 0 && data.locality.size() < 200 &&
+             data.city is string && data.city.size() > 0 && data.city.size() < 100 &&
+             data.state is string && data.state.size() > 0 && data.state.size() < 100 &&
+             data.pincode is string && data.pincode.size() == 6 &&
+             isValidDateString(data.createdAt) &&
+             (!('title' in data) || (data.title is string && data.title.size() < 200)) &&
+             (!('description' in data) || (data.description is string && data.description.size() < 5000));
+    }
+
+    function isValidUser(data) {
+      return hasRequiredFields(['id', 'role']) &&
+             data.id is string && data.id.size() > 0 && data.id.size() < 100 &&
+             data.role in ["ADMIN", "OWNER", "FINDER"] &&
+             (!('name' in data) || (data.name is string && data.name.size() < 100)) &&
+             (!('email' in data) || data.email == "" || (isValidEmail(data.email) && data.email.size() < 100)) &&
+             (!('phone' in data) || (data.phone is string && data.phone.size() < 20)) &&
+             (!('favorites' in data) || (data.favorites is list && data.favorites.size() < 1000));
+    }
+
+    function isValidStatUpdate() {
+      let statFields = ['scans', 'internalScans', 'views', 'favoritesCount', 'shares', 'callClicks', 'messageClicks'];
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(statFields) &&
+             request.resource.data.ownerId == resource.data.ownerId &&
+             request.resource.data.id == resource.data.id;
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    match /users/{userId} {
+      allow read: if isOwner(userId) || isAdmin(); 
+      allow create: if (isOwner(userId) || isAdmin()) && isValidUser(request.resource.data) && (request.resource.data.role != 'ADMIN' || isAdmin());
+      allow update: if (isOwner(userId) || isAdmin()) && isValidUser(request.resource.data) && (request.resource.data.role == resource.data.role || isAdmin()) && request.resource.data.id == resource.data.id;
+      allow delete: if isAdmin();
+    }
+
+    match /users_public/{userId} {
+      allow read: if true;
+      allow create, update: if isOwner(userId) || isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    match /qrcodes/{qrId} {
+      allow read: if true;
+      allow create: if (isAdmin() || (isAuthenticated() && request.resource.data.createdBy == 'OWNER' && request.resource.data.ownerId == request.auth.uid)) && isValidQRCode(request.resource.data);
+      allow update: if isAdmin() || (
+        isAuthenticated() && 
+        resource.data.status == 'UNLINKED' && 
+        request.resource.data.status == 'LINKED' && 
+        request.resource.data.ownerId == request.auth.uid &&
+        request.resource.data.qrId == resource.data.qrId &&
+        request.resource.data.createdBy == resource.data.createdBy &&
+        request.resource.data.createdAt == resource.data.createdAt
+      );
+      allow delete: if isAdmin();
+    }
+
+    match /properties/{propertyId} {
+      allow read: if true;
+      allow create: if isAuthenticated() && request.resource.data.ownerId == request.auth.uid && isValidProperty(request.resource.data);
+      allow update: if 
+        isValidStatUpdate() ||
+        isAdmin() ||
+        (isAuthenticated() && resource.data.ownerId == request.auth.uid && isValidProperty(request.resource.data) && request.resource.data.ownerId == resource.data.ownerId && request.resource.data.id == resource.data.id && request.resource.data.createdAt == resource.data.createdAt);
+      allow delete: if (isAuthenticated() && resource.data.ownerId == request.auth.uid) || isAdmin();
+    }
+
+    match /test/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+  }
+}
